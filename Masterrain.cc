@@ -66,9 +66,9 @@ set<SDL_Keycode> keys_down;
 
 void drawtree(cairo_t * cr, float x, float y, float size, float rot) {
   cairo_save(cr);
+  cairo_translate(cr, x, y);
   cairo_rotate(cr, rot);
   cairo_scale(cr, size, size);
-  cairo_translate(cr, x, y);
   cairo_new_sub_path(cr);
   cairo_arc(cr, -0.1, -0.1, 0.05, 0, 2*M_PI);
   cairo_set_source_rgb(cr, 0, 1.0, 0);
@@ -107,10 +107,20 @@ void gameloop(cairo_t * cr) {
     cairo_translate(cr, 1, -1);
 
     while (true) {
+      //player movement
       if (keys_down.count(SDLK_w)) guy_y += 0.01;
       if (keys_down.count(SDLK_s)) guy_y -= 0.01;
       if (keys_down.count(SDLK_a)) guy_x -= 0.01;
       if (keys_down.count(SDLK_d)) guy_x += 0.01;
+
+      // if the player is too close to the tree, he gets pushed away
+      float distance = sqrt(pow(guy_x - treex1, 2) + pow(guy_y - treey1, 2));
+//      cout << distance << endl;
+      if (distance < 0.15){
+        float slope = (guy_y - treey1) / (guy_x - treex1);
+        guy_x += 0.01 / slope;
+        guy_y += 0.01 * slope;
+      }
 
         drawlayer1(cr);
 
