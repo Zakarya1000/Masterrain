@@ -97,10 +97,11 @@ float treerot2 = random(0, 2*M_PI);
 float guy_x = 0;
 float guy_y = 0;
 
-void drawworld(cairo_t * cr);
-void drawfocus(cairo_t * cr);
+void drawlayer1(cairo_t * cr);
+void drawfocuslayer2(cairo_t * cr);
+void drawlayer3(cairo_t * cr);
 
-void drawstuff(cairo_t * cr) {
+void gameloop(cairo_t * cr) {
     // 0,0 at center of window and 1,1 at top right
     cairo_scale(cr, SCREEN_WIDTH/2.0, -SCREEN_HEIGHT/2.0);
     cairo_translate(cr, 1, -1);
@@ -110,15 +111,12 @@ void drawstuff(cairo_t * cr) {
       if (keys_down.count(SDLK_s)) guy_y -= 0.01;
       if (keys_down.count(SDLK_a)) guy_x -= 0.01;
       if (keys_down.count(SDLK_d)) guy_x += 0.01;
-        // clear screen
-        // grass
-        cairo_rectangle(cr, -1, -1, 2, 2);
-        cairo_set_source_rgb(cr, 0.5, 1, 0.5);
-        cairo_fill(cr);
 
-        drawworld(cr);
+        drawlayer1(cr);
 
-        drawfocus(cr);
+        drawfocuslayer2(cr);
+
+        drawlayer3(cr);
 
         SDL_Event e;
         e.type = BLIT_READY;
@@ -128,14 +126,26 @@ void drawstuff(cairo_t * cr) {
 
       }
     }
-    void drawworld(cairo_t * cr) {
+    void drawlayer3(cairo_t * cr) {
       cairo_save(cr);
       cairo_translate(cr, -guy_x, -guy_y);
       drawtree(cr, treex2, treey2, 1, treerot2);
       drawtree(cr, treex1, treey1, 1, treerot1);
       cairo_restore(cr);
     }
-    void drawfocus(cairo_t * cr) {
+
+    void drawlayer1(cairo_t * cr) {
+      // clear screen
+      // grass
+      cairo_rectangle(cr, -1, -1, 2, 2);
+      cairo_set_source_rgb(cr, 0.5, 1, 0.5);
+      cairo_fill(cr);
+      cairo_save(cr);
+      cairo_translate(cr, -guy_x, -guy_y);
+      cairo_restore(cr);
+    }
+
+    void drawfocuslayer2(cairo_t * cr) {
 
         // text genoration
         /*
@@ -226,7 +236,7 @@ int main(int nargs, char * args[])
     cairo_translate(cr2, 1, -1);
 
     BLIT_READY = SDL_RegisterEvents(1);
-    thread drawthread(drawstuff, cr1);
+    thread loopthread(gameloop, cr1);
 
     SDL_Surface * wsurf = SDL_GetWindowSurface(gWindow);
 
@@ -265,7 +275,7 @@ int main(int nargs, char * args[])
 	}
     }
 
-    drawthread.detach();
+    loopthread.detach();
 
     close();
 
