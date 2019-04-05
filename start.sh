@@ -1,0 +1,1 @@
+make && ./Masterrain.exe

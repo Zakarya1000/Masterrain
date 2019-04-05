@@ -86,16 +86,46 @@ void drawtree(cairo_t * cr, float x, float y, float size, float rot) {
   cairo_restore(cr);
 }
 
-float treex1 = random(-1, 1);
-float treey1 = random(-1, 1);
-float treerot1 = random(0, 2*M_PI);
+float treex1;
+float treey1;
+float treerot1;
 
-float treex2 = random(-1, 1);
-float treey2 = random(-1, 1);
-float treerot2 = random(0, 2*M_PI);
+float treex2;
+float treey2;
+float treerot2;
 
-float guy_x = 0;
-float guy_y = 0;
+void createtrees(){
+  treex1 = random(-1, 1);
+  treey1 = random(-1, 1);
+  treerot1 = random(0, 2*M_PI);
+
+  cpFloat radius = .15;
+  cpBody *tree1Body = cpSpaceGetStaticBody(space);
+  cpBodySetPosition(tree1Body, cpv(treex1, treey1));
+  cpShape *tree1Shape = cpSpaceAddShape(space, cpCircleShapeNew(tree1Body, radius, cpvzero));
+  cpShapeSetFriction(tree1Shape, 0.7);
+
+  treex2 = random(-1, 1);
+  treey2 = random(-1, 1);
+  treerot2 = random(0, 2*M_PI);
+}
+
+float guy_x;
+float guy_y;
+cpBody *guyBody;
+
+void createplayer(){
+  guy_x = 0;
+  guy_y = 0;
+
+  cpFloat radius = .1;
+  cpFloat mass = 1;
+  cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
+  guyBody = cpSpaceAddBody(space, cpBodyNew(mass, moment));
+  cpBodySetPosition(guyBody, cpv(guy_x, guy_y));
+  cpShape *guyShape = cpSpaceAddShape(space, cpCircleShapeNew(guyBody, radius, cpvzero));
+  cpShapeSetFriction(guyShape, 0.7);
+}
 
 void drawlayer1(cairo_t * cr);
 void drawfocuslayer2(cairo_t * cr);
@@ -108,19 +138,29 @@ void gameloop(cairo_t * cr) {
 
     while (true) {
       //player movement
-      if (keys_down.count(SDLK_w)) guy_y += 0.01;
-      if (keys_down.count(SDLK_s)) guy_y -= 0.01;
-      if (keys_down.count(SDLK_a)) guy_x -= 0.01;
-      if (keys_down.count(SDLK_d)) guy_x += 0.01;
+      float guy_dx = 0;
+      float guy_dy = 0;
+      if (keys_down.count(SDLK_w)) guy_dy += 1;
+      if (keys_down.count(SDLK_s)) guy_dy -= 1;
+      if (keys_down.count(SDLK_a)) guy_dx -= 1;
+      if (keys_down.count(SDLK_d)) guy_dx += 1;
+      //cout << guy_dx << ',' << guy_dy << endl;
+      cpBodySetVelocity(guyBody, cpv(guy_dx, guy_dy));
+
+      cpSpaceStep(space, 20.0/1000.0);
+
+      cpVect guy_pos = cpBodyGetPosition(guyBody);
+      guy_x = guy_pos.x;
+      guy_y = guy_pos.y;
 
       // if the player is too close to the tree, he gets pushed away
-      float distance = sqrt(pow(guy_x - treex1, 2) + pow(guy_y - treey1, 2));
+/*      float distance = sqrt(pow(guy_x - treex1, 2) + pow(guy_y - treey1, 2));
 //      cout << distance << endl;
       if (distance < 0.15){
         float slope = (guy_y - treey1) / (guy_x - treex1);
         guy_x += 0.01 / slope;
-        guy_y += 0.01 * slope;
-      }
+        guy_y += 0.01 * slope;*/
+      //}
 
         drawlayer1(cr);
 
@@ -221,8 +261,10 @@ void gameloop(cairo_t * cr) {
 
 int main(int nargs, char * args[])
 {
+  space = cpSpaceNew();
     init();
-
+    createtrees();
+    createplayer();
     SDL_Surface * sdlsurf = SDL_CreateRGBSurface(
         0, SCREEN_WIDTH, SCREEN_HEIGHT, 32,
         0x00FF0000, // red
