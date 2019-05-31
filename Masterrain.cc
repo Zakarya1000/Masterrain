@@ -25,7 +25,7 @@ char WINDOW_NAME[] = "Masterrain";
 SDL_Window * gWindow = NULL;
 
 void die(string message) {
-    printf("%s\n", message);
+    cout << message << endl;
     exit(1);
 }
 

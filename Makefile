@@ -1,2 +1,2 @@
 Masterrain: Masterrain.cc
-	g++ -m32 Masterrain.cc -I/mingw32/include/SDL2 -I/mingw32/include/cairo -I/mingw32/include/chipmunk -L/mingw32/lib -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -lcairo -lchipmunk -mwindows -o Masterrain.exe
+	g++ -std=gnu++11 Masterrain.cc -I/usr/include/SDL2 -I/usr/include/cairo -I/usr/local/include/chipmunk -L/mingw32/lib -lSDL2main -lSDL2 -lcairo -lchipmunk -lpthread -o Masterrain
